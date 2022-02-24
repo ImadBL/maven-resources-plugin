@@ -19,8 +19,8 @@ package org.apache.maven.plugins.resources;
  * under the License.
  */
 
+import org.apache.maven.api.plugin.MojoException;
 import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -64,11 +64,11 @@ public class TestResourcesMojo
      * {@inheritDoc}
      */
     public void execute()
-        throws MojoExecutionException
+        throws MojoException
     {
         if ( skip )
         {
-            getLog().info( "Not copying test resources" );
+            logger.info( "Not copying test resources" );
         }
         else
         {

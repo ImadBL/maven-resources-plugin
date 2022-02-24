@@ -67,7 +67,7 @@ public class ItFilter
         System.out.println("ItFilter filterResources");
         try
         {
-            File f = new File( mavenResourcesExecution.getOutputDirectory(), "foo.txt" );
+            File f = new File( mavenResourcesExecution.getOutputDirectory().toFile(), "foo.txt" );
             List<String> lines = new ArrayList<String>();
             
             lines.add( "foo" );

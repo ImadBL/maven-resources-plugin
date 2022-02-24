@@ -19,9 +19,9 @@ package org.apache.maven.plugins.resources;
  * under the License.
  */
 
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.annotations.Parameter;
 import org.apache.maven.model.Resource;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.List;
  * @author Olivier Lamy
  * @since 2.3
  */
-@Mojo( name = "copy-resources", threadSafe = true )
+@Mojo( name = "copy-resources" )
 public class CopyResourcesMojo
     extends ResourcesMojo
 {

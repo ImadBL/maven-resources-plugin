@@ -25,27 +25,23 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.execution.MavenSession;
+import org.apache.maven.api.Project;
+import org.apache.maven.api.Session;
+import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.plugin.annotations.Component;
+import org.apache.maven.api.plugin.annotations.LifecyclePhase;
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.annotations.Parameter;
 import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
-import org.codehaus.plexus.PlexusConstants;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.context.Context;
-import org.codehaus.plexus.context.ContextException;
-import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Copy resources for the main source code to the main output directory. Always uses the project.build.resources element
@@ -56,11 +52,12 @@ import org.codehaus.plexus.personality.plexus.lifecycle.phase.Contextualizable;
  * @author Andreas Hoheneder
  * @author William Ferguson
  */
-@Mojo( name = "resources", defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresProject = true, threadSafe = true )
+@Mojo( name = "resources", defaultPhase = LifecyclePhase.PROCESS_RESOURCES )
 public class ResourcesMojo
-    extends AbstractMojo
-    implements Contextualizable
+    implements org.apache.maven.api.plugin.Mojo
 {
+
+    protected Logger logger = LoggerFactory.getLogger( getClass() );
 
     /**
      * The character encoding to use when reading and writing filtered resources.
@@ -93,7 +90,7 @@ public class ResourcesMojo
      *
      */
     @Parameter( defaultValue = "${project}", readonly = true, required = true )
-    protected MavenProject project;
+    protected Project project;
 
     /**
      * The list of additional filter properties files to be used along with System and project properties, which would
@@ -134,14 +131,8 @@ public class ResourcesMojo
     /**
      *
      */
-    @Component( role = MavenResourcesFiltering.class, hint = "default" )
-    protected MavenResourcesFiltering mavenResourcesFiltering;
-
-    /**
-     *
-     */
     @Parameter( defaultValue = "${session}", readonly = true, required = true )
-    protected MavenSession session;
+    protected Session session;
 
     /**
      * Expressions preceded with this string won't be interpolated. Anything else preceded with this string will be
@@ -259,16 +250,6 @@ public class ResourcesMojo
     private List<String> mavenFilteringHints;
 
     /**
-     * @since 2.4
-     */
-    private PlexusContainer plexusContainer;
-
-    /**
-     * @since 2.4
-     */
-    private List<MavenResourcesFiltering> mavenFilteringComponents = new ArrayList<MavenResourcesFiltering>();
-
-    /**
      * stop searching endToken at the end of line
      *
      * @since 2.5
@@ -293,29 +274,28 @@ public class ResourcesMojo
     @Parameter( property = "maven.resources.skip", defaultValue = "false" )
     private boolean skip;
 
-    /** {@inheritDoc} */
-    public void contextualize( Context context )
-        throws ContextException
-    {
-        plexusContainer = (PlexusContainer) context.get( PlexusConstants.PLEXUS_KEY );
-    }
+    /**
+     * Map containing all MavenResourcesFiltering components
+     */
+    @Component
+    private Map<String, MavenResourcesFiltering> mavenResourcesFilteringMap;
 
     /** {@inheritDoc} */
     public void execute()
-        throws MojoExecutionException
+        throws MojoException
     {
         if ( isSkip() )
         {
-            getLog().info( "Skipping the execution." );
+            logger.info( "Skipping the execution." );
             return;
         }
 
         if ( StringUtils.isBlank( encoding ) && isFilteringEnabled( getResources() ) )
         {
-            getLog().warn( "File encoding has not been set, using platform encoding "
+            logger.warn( "File encoding has not been set, using platform encoding "
                 + System.getProperty( "file.encoding" )
                 + ". Build is platform dependent!" );
-            getLog().warn( "See https://maven.apache.org/general.html#encoding-warning" );
+            logger.warn( "See https://maven.apache.org/general.html#encoding-warning" );
         }
 
         try
@@ -323,8 +303,8 @@ public class ResourcesMojo
             List<String> combinedFilters = getCombinedFiltersList();
 
             MavenResourcesExecution mavenResourcesExecution =
-                new MavenResourcesExecution( getResources(), getOutputDirectory(), project, encoding, combinedFilters,
-                                             Collections.<String>emptyList(), session );
+                new MavenResourcesExecution( getResources(), getOutputDirectory().toPath(), project, encoding,
+                                             combinedFilters, Collections.emptyList(), session );
 
             mavenResourcesExecution.setEscapeWindowsPaths( escapeWindowsPaths );
 
@@ -353,13 +333,13 @@ public class ResourcesMojo
             {
                 mavenResourcesExecution.setNonFilteredFileExtensions( nonFilteredFileExtensions );
             }
-            mavenResourcesFiltering.filterResources( mavenResourcesExecution );
+            getFilter( "default" ).filterResources( mavenResourcesExecution );
 
             executeUserFilterComponents( mavenResourcesExecution );
         }
         catch ( MavenFilteringException e )
         {
-            throw new MojoExecutionException( e.getMessage(), e );
+            throw new MojoException( e.getMessage(), e );
         }
     }
 
@@ -384,7 +364,8 @@ public class ResourcesMojo
         additionalProperties.put( "maven.build.timestamp", timeStamp );
         if ( project.getBasedir() != null )
         {
-            additionalProperties.put( "project.baseUri", project.getBasedir().getAbsoluteFile().toURI().toString() );
+            additionalProperties.put( "project.baseUri",
+                    project.getBasedir().toAbsolutePath().toFile().toURI().toString() );
         }
 
         return additionalProperties;
@@ -392,44 +373,36 @@ public class ResourcesMojo
 
     /**
      * @param mavenResourcesExecution {@link MavenResourcesExecution} 
-     * @throws MojoExecutionException in case of wrong lookup.
+     * @throws MojoException in case of wrong lookup.
      * @throws MavenFilteringException in case of failure.
      * @since 2.5
      */
     protected void executeUserFilterComponents( MavenResourcesExecution mavenResourcesExecution )
-        throws MojoExecutionException, MavenFilteringException
+        throws MojoException, MavenFilteringException
     {
-
-        if ( mavenFilteringHints != null )
+        if ( mavenFilteringHints != null && !mavenFilteringHints.isEmpty() )
         {
+            logger.debug( "execute user filters" );
             for ( String hint : mavenFilteringHints )
             {
-                try
-                {
-                    // CHECKSTYLE_OFF: LineLength
-                    mavenFilteringComponents.add( (MavenResourcesFiltering) plexusContainer.lookup( MavenResourcesFiltering.class.getName(),
-                                                                                                    hint ) );
-                    // CHECKSTYLE_ON: LineLength
-                }
-                catch ( ComponentLookupException e )
-                {
-                    throw new MojoExecutionException( e.getMessage(), e );
-                }
+                MavenResourcesFiltering filter = getFilter( hint );
+                filter.filterResources( mavenResourcesExecution );
             }
         }
         else
         {
-            getLog().debug( "no use filter components" );
+            logger.debug( "not using filter components" );
         }
+    }
 
-        if ( mavenFilteringComponents != null && !mavenFilteringComponents.isEmpty() )
+    protected MavenResourcesFiltering getFilter( String hint )
+    {
+        MavenResourcesFiltering filtering = mavenResourcesFilteringMap.get( hint );
+        if ( filtering == null )
         {
-            getLog().debug( "execute user filters" );
-            for ( MavenResourcesFiltering filter : mavenFilteringComponents )
-            {
-                filter.filterResources( mavenResourcesExecution );
-            }
+            throw new MojoException( "Unable to find MavenResourcesFiltering with hint '" + hint + "'" );
         }
+        return filtering;
     }
 
     /**

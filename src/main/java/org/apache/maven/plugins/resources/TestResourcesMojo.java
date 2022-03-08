@@ -20,10 +20,10 @@ package org.apache.maven.plugins.resources;
  */
 
 import org.apache.maven.api.plugin.MojoException;
+import org.apache.maven.api.plugin.annotations.LifecyclePhase;
+import org.apache.maven.api.plugin.annotations.Mojo;
+import org.apache.maven.api.plugin.annotations.Parameter;
 import org.apache.maven.model.Resource;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.util.List;
@@ -35,8 +35,7 @@ import java.util.List;
  * @author <a href="michal.maczka@dimatics.com">Michal Maczka</a>
  * @author <a href="mailto:jason@maven.org">Jason van Zyl</a>
  */
-@Mojo( name = "testResources", defaultPhase = LifecyclePhase.PROCESS_TEST_RESOURCES, requiresProject = true,
-       threadSafe = true )
+@Mojo( name = "testResources", defaultPhase = LifecyclePhase.PROCESS_TEST_RESOURCES, requiresProject = true )
 public class TestResourcesMojo
     extends ResourcesMojo
 {

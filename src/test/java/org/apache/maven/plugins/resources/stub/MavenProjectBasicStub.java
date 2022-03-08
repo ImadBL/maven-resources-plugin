@@ -19,16 +19,27 @@ package org.apache.maven.plugins.resources.stub;
  * under the License.
  */
 
+import javax.annotation.Nonnull;
+
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Properties;
 
+import org.apache.maven.api.Artifact;
+import org.apache.maven.api.Dependency;
+import org.apache.maven.api.Project;
+import org.apache.maven.model.Model;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.codehaus.plexus.PlexusTestCase;
 import org.codehaus.plexus.util.FileUtils;
 
 public class MavenProjectBasicStub
-    extends MavenProjectStub
+    implements Project
 {
+    protected Model model;
+
     protected String identifier;
 
     protected String testRootDir;
@@ -40,6 +51,7 @@ public class MavenProjectBasicStub
     public MavenProjectBasicStub( String id )
         throws Exception
     {
+        model = new Model();
         properties = new Properties();
         identifier = id;
         testRootDir = PlexusTestCase.getBasedir() + "/target/test-classes/unit/test-dir/" + identifier;
@@ -72,11 +84,11 @@ public class MavenProjectBasicStub
         }
     }
 
-    public File getBasedir()
+    public Path getBasedir()
     {
         // create an isolated environment
         // see setupTestEnvironment for details
-        return new File( testRootDir );
+        return Paths.get( testRootDir );
     }
 
     public String getGroupId()
@@ -101,11 +113,47 @@ public class MavenProjectBasicStub
 
     public void addProperty( String key, String value )
     {
-        properties.put( key, value );
+        model.getProperties().put( key, value );
     }
 
-    public Properties getProperties()
+    @Nonnull
+    @Override
+    public Artifact getArtifact()
     {
-        return properties;
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public Model getModel()
+    {
+        return model;
+    }
+
+    @Nonnull
+    @Override
+    public Path getPomPath()
+    {
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public List<Dependency> getDependencies()
+    {
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public List<Dependency> getManagedDependencies()
+    {
+        return null;
+    }
+
+    @Override
+    public boolean isExecutionRoot()
+    {
+        return false;
     }
 }

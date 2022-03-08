@@ -20,6 +20,7 @@ package org.apache.maven.plugins.resources.stub;
  */
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.apache.maven.model.Resource;
 
@@ -93,7 +94,7 @@ public class MavenProjectResourcesStub
         // of getBasedir
 
         // setup default resources
-        resource.setDirectory( getBasedir().getPath() + "/src/main/resources" );
+        resource.setDirectory( getBasedir() + "/src/main/resources" );
         resource.setFiltering( false );
         resource.setTargetPath( null );
         build.addResource( resource );
@@ -107,7 +108,7 @@ public class MavenProjectResourcesStub
         // of getBasedir
 
         // setup default test resources
-        resource.setDirectory( getBasedir().getPath() + "/src/test/resources" );
+        resource.setDirectory( getBasedir() + "/src/test/resources" );
         resource.setFiltering( false );
         resource.setTargetPath( null );
         build.addTestResource( resource );
@@ -115,7 +116,7 @@ public class MavenProjectResourcesStub
 
     public File getBaseDir()
     {
-        return baseDir == null ? super.getBasedir() : baseDir;
+        return baseDir == null ? super.getBasedir().toFile() : baseDir;
     }
 
     public void setBaseDir( File baseDir )

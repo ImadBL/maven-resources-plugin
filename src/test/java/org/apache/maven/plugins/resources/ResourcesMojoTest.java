@@ -29,43 +29,47 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.maven.api.Session;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.api.plugin.testing.stubs.SessionStub;
 import org.apache.maven.plugins.resources.stub.MavenProjectResourcesStub;
-import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.util.FileUtils;
-import org.eclipse.aether.RepositorySystemSession;
+import org.junit.jupiter.api.Test;
 
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@MojoTest
 public class ResourcesMojoTest
-    extends AbstractMojoTestCase
 {
-    protected final static String defaultPomFilePath = "/target/test-classes/unit/resources-test/plugin-config.xml";
+
+    public static final String PLUGIN_CONFIG_XML = "classpath:/unit/resources-test/plugin-config.xml";
 
     /**
      * test mojo lookup, test harness should be working fine
      *
      * @throws Exception
      */
-    public void testHarnessEnvironment()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testHarnessEnvironment( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
-
         assertNotNull( mojo );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceDirectoryStructure()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceDirectoryStructure( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourceDirectoryStructure" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
@@ -96,14 +100,11 @@ public class ResourcesMojoTest
         assertTrue( FileUtils.fileExists( resourcesDir + "/notpackage/test" ) );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceDirectoryStructure_RelativePath()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceDirectoryStructure_RelativePath( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourceDirectoryStructure_RelativePath" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
@@ -135,17 +136,13 @@ public class ResourcesMojoTest
         assertTrue( FileUtils.fileExists( resourcesDir + "/notpackage/test" ) );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceEncoding()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceEncoding( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "encoding" );
-        List<Resource> resources = project.getBuild()
-                                .getResources();
+        List<Resource> resources = project.getBuild().getResources();
 
         assertNotNull( mojo );
 
@@ -167,14 +164,11 @@ public class ResourcesMojoTest
         assertTrue( FileUtils.fileExists( resourcesDir + "/file4.txt" ) );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceInclude()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceInclude( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourceInclude" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
@@ -221,14 +215,11 @@ public class ResourcesMojoTest
         assertFalse( FileUtils.fileExists( resourcesDir + "/notpackage/nottest/file.txt" ) );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceExclude()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceExclude( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourceExclude" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
@@ -276,14 +267,11 @@ public class ResourcesMojoTest
         assertFalse( FileUtils.fileExists( resourcesDir + "/notpackage/nottest/file.txt" ) );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceTargetPath()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceTargetPath( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourceTargetPath" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
@@ -316,14 +304,11 @@ public class ResourcesMojoTest
         assertTrue( FileUtils.fileExists( resourcesDir + "/org/apache/maven/plugin/test/notpackage/test" ) );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceSystemProperties_Filtering()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceSystemProperties_Filtering( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourceSystemProperties_Filtering" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
@@ -346,8 +331,7 @@ public class ResourcesMojoTest
         MavenExecutionRequest request = new DefaultMavenExecutionRequest();
         request.setSystemProperties( System.getProperties() );
 
-        MavenSession mavenSession =
-            new MavenSession( (PlexusContainer) null, (RepositorySystemSession) null, request, null );
+        Session mavenSession = new SessionStub();
         setVariableValueToObject( mojo, "session", mavenSession );
         mojo.execute();
 
@@ -357,29 +341,21 @@ public class ResourcesMojoTest
         assertTrue( userDir.exists() );
 
         Properties props = new Properties();
-        final FileInputStream inStream = new FileInputStream( new File( resourcesDir, "file4.txt" ) );
-        try
+        try ( FileInputStream inStream = new FileInputStream( new File( resourcesDir, "file4.txt" ) ) )
         {
             props.load( inStream );
         }
-        finally
-        {
-            inStream.close();
-        }
         File fileFromFiltering = new File( props.getProperty( "current-working-directory" ) );
 
-        assertTrue( fileFromFiltering.getAbsolutePath() + " does not exist.", fileFromFiltering.exists() );
+        assertTrue( fileFromFiltering.exists(), fileFromFiltering.getAbsolutePath() + " does not exist." );
         assertEquals( userDir.getAbsolutePath(), fileFromFiltering.getAbsolutePath() );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testResourceProjectProperties_Filtering()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testResourceProjectProperties_Filtering( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourceProjectProperties_Filtering" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
@@ -406,14 +382,11 @@ public class ResourcesMojoTest
         assertContent( resourcesDir + "/file4.txt", checkString );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testProjectProperty_Filtering_PropertyDestination()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testProjectProperty_Filtering_PropertyDestination( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project =
             new MavenProjectResourcesStub( "resourcePojectProperty_Filtering_PropertyDestination" );
         List<Resource> resources = project.getBuild()
@@ -444,18 +417,15 @@ public class ResourcesMojoTest
         assertContent( resourcesDir + "/file4.properties", checkString );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testPropertyFiles_Filtering()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testPropertyFiles_Filtering( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourcePropertyFiles_Filtering" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
-        LinkedList<String> filterList = new LinkedList<String>();
+        LinkedList<String> filterList = new LinkedList<>();
 
         assertNotNull( mojo );
 
@@ -480,18 +450,15 @@ public class ResourcesMojoTest
         assertContent( resourcesDir + "/file4.properties", checkString );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testPropertyFiles_Extra()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testPropertyFiles_Extra( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourcePropertyFiles_Extra" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
-        LinkedList<String> filterList = new LinkedList<String>();
+        LinkedList<String> filterList = new LinkedList<>();
 
         assertNotNull( mojo );
 
@@ -516,19 +483,16 @@ public class ResourcesMojoTest
         assertContent( resourcesDir + "/extra.properties", checkString );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testPropertyFiles_MainAndExtra()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testPropertyFiles_MainAndExtra( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "resourcePropertyFiles_MainAndExtra" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
-        LinkedList<String> filterList = new LinkedList<String>();
-        LinkedList<String> extraFilterList = new LinkedList<String>();
+        LinkedList<String> filterList = new LinkedList<>();
+        LinkedList<String> extraFilterList = new LinkedList<>();
 
         assertNotNull( mojo );
 
@@ -563,19 +527,17 @@ public class ResourcesMojoTest
     /**
      * Validates that a Filter token containing a project property will be resolved before the Filter is applied to the
      * resources.
-     *
-     * @throws Exception
      */
-    public void testPropertyFiles_Filtering_TokensInFilters()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testPropertyFiles_Filtering_TokensInFilters( ResourcesMojo mojo )
         throws Exception
     {
-        final File testPom = new File( getBasedir(), defaultPomFilePath );
-        final ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         final MavenProjectResourcesStub project =
             new MavenProjectResourcesStub( "resourcePropertyFiles_Filtering_TokensInFilters" );
         final List<Resource> resources = project.getBuild()
                                       .getResources();
-        final LinkedList<String> filterList = new LinkedList<String>();
+        final LinkedList<String> filterList = new LinkedList<>();
 
         assertNotNull( mojo );
 
@@ -601,21 +563,19 @@ public class ResourcesMojoTest
         assertContent( resourcesDir + "/file4.properties", checkString );
     }
 
-    public void testWindowsPathEscapingDisabled()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testWindowsPathEscapingDisabled( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "windows-paths" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
 
         assertNotNull( mojo );
 
-        project.getProperties()
-               .setProperty( "basePath", "C:\\Users\\Administrator" );
-        project.getProperties()
-               .setProperty( "docsPath", "${basePath}\\Documents" );
+        project.addProperty( "basePath", "C:\\Users\\Administrator" );
+        project.addProperty( "docsPath", "${basePath}\\Documents" );
 
         project.addFile( "path-listing.txt", "base path is ${basePath}\ndocuments path is ${docsPath}" );
         project.setResourceFiltering( 0, true );
@@ -641,21 +601,19 @@ public class ResourcesMojoTest
                       FileUtils.fileRead( new File( resourcesDir, "path-listing.txt" ) ) );
     }
 
-    public void testWindowsPathEscapingEnabled()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testWindowsPathEscapingEnabled( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "windows-paths" );
         List<Resource> resources = project.getBuild()
                                 .getResources();
 
         assertNotNull( mojo );
 
-        project.getProperties()
-               .setProperty( "basePath", "C:\\Users\\Administrator" );
-        project.getProperties()
-               .setProperty( "docsPath", "${basePath}\\Documents" );
+        project.addProperty( "basePath", "C:\\Users\\Administrator" );
+        project.addProperty( "docsPath", "${basePath}\\Documents" );
 
         project.addFile( "path-listing.txt", "base path is ${basePath}\ndocuments path is ${docsPath}" );
         project.setResourceFiltering( 0, true );

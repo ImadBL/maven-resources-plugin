@@ -26,14 +26,15 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.codehaus.plexus.util.IOUtil;
+import org.junit.jupiter.api.BeforeEach;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Base class for propertyutils test case
  */
 public abstract class AbstractPropertyUtilsTest
-    extends AbstractMojoTestCase
 {
     protected File propertyFile;
 
@@ -45,11 +46,10 @@ public abstract class AbstractPropertyUtilsTest
 
     protected abstract File getValidationFile();
 
+    @BeforeEach
     protected void setUp()
         throws Exception
     {
-        super.setUp();
-
         // load data
         propertyFile = getPropertyFile();
         assertNotNull( propertyFile );

@@ -23,6 +23,12 @@ import java.io.File;
 import java.util.Properties;
 
 import org.apache.maven.shared.filtering.PropertyUtils;
+import org.junit.jupiter.api.Test;
+
+import static org.codehaus.plexus.testing.PlexusExtension.getBasedir;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BasicPropertyUtilsTest
     extends AbstractPropertyUtilsTest
@@ -58,9 +64,8 @@ public class BasicPropertyUtilsTest
 
     /**
      * load property test case can be adjusted by modifying the basic.properties and basic_validation properties
-     *
-     * @throws Exception
      */
+    @Test
     public void testBasicLoadProperty_FF()
         throws Exception
     {
@@ -72,9 +77,8 @@ public class BasicPropertyUtilsTest
 
     /**
      * load property test case can be adjusted by modifying the basic.properties and basic_validation properties
-     *
-     * @throws Exception
      */
+    @Test
     public void testBasicLoadProperty_TF()
         throws Exception
     {
@@ -86,9 +90,8 @@ public class BasicPropertyUtilsTest
 
     /**
      * load property test case can be adjusted by modifying the basic.properties and basic_validation properties
-     *
-     * @throws Exception
      */
+    @Test
     public void testBasicLoadProperty_TT()
         throws Exception
     {
@@ -101,9 +104,8 @@ public class BasicPropertyUtilsTest
 
     /**
      * load property test case can be adjusted by modifying the basic.properties and basic_validation properties
-     *
-     * @throws Exception
      */
+    @Test
     public void testNonExistentProperty()
         throws Exception
     {

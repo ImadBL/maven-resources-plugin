@@ -24,43 +24,37 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.plugins.resources.stub.MavenProjectResourcesStub;
 import org.codehaus.plexus.util.FileUtils;
+import org.junit.jupiter.api.Test;
 
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@MojoTest
 public class TestResourcesTest
-    extends AbstractMojoTestCase
 {
-    protected final static String defaultPomFilePath = "/target/test-classes/unit/resources-test/plugin-config.xml";
 
-    protected void setUp()
-        throws Exception
-    {
-        super.setUp();
-    }
+    public static final String PLUGIN_CONFIG_XML = "classpath:/unit/resources-test/plugin-config.xml";
 
     /**
      * test mojo lookup, test harness should be working fine
-     *
-     * @throws Exception
      */
-    public void testHarnessEnvironment()
-        throws Exception
+    @Test
+    @InjectMojo( goal = "testResources", pom = PLUGIN_CONFIG_XML )
+    public void testHarnessEnvironment( TestResourcesMojo mojo )
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "testResources", testPom );
-
         assertNotNull( mojo );
     }
 
-    /**
-     * @throws Exception
-     */
-    public void testTestResourceDirectoryCreation()
+    @Test
+    @InjectMojo( goal = "testResources", pom = PLUGIN_CONFIG_XML )
+    public void testTestResourceDirectoryCreation( TestResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        TestResourcesMojo mojo = (TestResourcesMojo) lookupMojo( "testResources", testPom );
         MavenProjectResourcesStub project = new MavenProjectResourcesStub( "testResourceDirectoryStructure" );
         List<Resource> resources = project.getBuild().getResources();
 

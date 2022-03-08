@@ -1,13 +1,20 @@
 package org.apache.maven.plugins.resources;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Collections;
 
 import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.plugins.resources.ResourcesMojo;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
 import org.apache.maven.plugins.resources.stub.MavenProjectResourcesStub;
 import org.codehaus.plexus.util.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.maven.api.plugin.testing.MojoExtension.setVariableValueToObject;
+import static org.codehaus.plexus.testing.PlexusExtension.getBasedir;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -32,21 +39,21 @@ import org.codehaus.plexus.util.FileUtils;
  * @author Olivier Lamy
  * @version $Id$
  */
+@MojoTest
 public class CopyResourcesMojoTest
-    extends AbstractMojoTestCase
 {
 
-    protected final static String defaultPomFilePath = "/target/test-classes/unit/resources-test/plugin-config.xml";
+    public static final String PLUGIN_CONFIG_XML = "classpath:/unit/resources-test/plugin-config.xml";
 
     File outputDirectory = new File( getBasedir(), "/target/copyResourcesTests" );
 
+    @BeforeEach
     protected void setUp()
         throws Exception
     {
-        super.setUp();
         if ( !outputDirectory.exists() )
         {
-            outputDirectory.mkdirs();
+            Files.createDirectories( outputDirectory.toPath() );
         }
         else
         {
@@ -54,12 +61,11 @@ public class CopyResourcesMojoTest
         }
     }
 
-    public void testCopyWithoutFiltering()
+    @Test
+    @InjectMojo( goal = "resources", pom = PLUGIN_CONFIG_XML )
+    public void testCopyWithoutFiltering( ResourcesMojo mojo )
         throws Exception
     {
-        File testPom = new File( getBasedir(), defaultPomFilePath );
-        ResourcesMojo mojo = (ResourcesMojo) lookupMojo( "resources", testPom );
-
         mojo.setOutputDirectory( outputDirectory );
 
         Resource resource = new Resource();

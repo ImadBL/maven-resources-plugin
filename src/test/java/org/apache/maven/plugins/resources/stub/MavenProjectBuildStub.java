@@ -67,6 +67,7 @@ public class MavenProjectBuildStub
         directoryList = new ArrayList<String>();
         dataMap = new HashMap<String, String>();
         setupBuild();
+        getModel().setBuild( build );
     }
 
     public void addDirectory( String name )
